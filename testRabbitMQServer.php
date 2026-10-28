@@ -7,12 +7,21 @@ require_once('login.php.inc');
 
 function doLogin($username,$password)
 {
-    // lookup username in databas
-    // check password
-    $login = new loginDB();
-    return $login->validateLogin($username,$password);
-    //return false if not valid
+  $login = new loginDB();
+  return $login->validateLogin($username,$password);
 }
+
+function doRegister($name,$username,$email,$password)
+{
+  $register = new loginDB();
+  return $register->registerUser($name,$username,$email,$password);
+}
+
+//function doValidate($sessionId)
+//{
+//  $login = new loginDB();
+//  return $login->validateSession($sessionId);
+//}
 
 function requestProcessor($request)
 {
@@ -26,8 +35,9 @@ function requestProcessor($request)
   {
     case "login":
       return doLogin($request['username'],$request['password']);
+    case "register":
+      return doRegister($request['name'],$request['username'],$request['email'],$request['password']);
     case "validate_session":
-      return doValidate($request['sessionId']);
   }
   return array("returnCode" => '0', 'message'=>"Server received request and processed");
 }
