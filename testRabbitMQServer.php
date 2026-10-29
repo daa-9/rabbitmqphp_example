@@ -38,6 +38,11 @@ function requestProcessor($request)
     case "register":
       return doRegister($request['name'],$request['username'],$request['email'],$request['password']);
     case "validate_session":
+    $db = new loginDB();
+    return $db->validateSession($request['token'] ?? '');
+    case "logout":
+    $db = new loginDB();
+    return $db->logoutSession($request['token'] ?? '');
   }
   return array("returnCode" => '0', 'message'=>"Server received request and processed");
 }

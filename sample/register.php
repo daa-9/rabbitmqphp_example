@@ -48,6 +48,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </head>
 <body>
     <h2>Register</h2>
+<?php if ($responseMessage !== ''): ?>
+    <p><?= htmlspecialchars($responseMessage, ENT_QUOTES, 'UTF-8') ?></p>
+<?php endif; ?>
     <form action="register.php" method="POST">
         <input type="hidden" name="type" value="register">
 

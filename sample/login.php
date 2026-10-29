@@ -23,15 +23,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         $response = $client->send_request($request);
 
-        if ($response == 1 && $response !== "0") {	
-			session_start();
-			$_SESSION['username'] = $username;
-			$_SESSION['sessionId'] = $response;
+        if (is_array($response) && ($response['ok'] ?? false) === true) {
+            setcookie('IT490_SESSION', $response['token'], [
+                'expires' => time() + 1800,
+                'path' => '/',
+                'httponly' => true,
+                'samesite' => 'Lax',
+                'secure' => !empty($_SERVER['HTTPS'])
+                            && $_SERVER['HTTPS'] !== 'off'
+            ]);
 
-			header("Location: dashboard.php");
-			exit();
+            header("Location: dashboard.php");
+            exit();
         } else {
-            $responseMessage = "Login Failed. Invalid username or password.";
+            $responseMessage = "Login failed. Invalid username or password.";
             $isSuccess = false;
         }
     }
