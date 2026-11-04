@@ -9,7 +9,7 @@ class loginDB
         $this->logindb = new mysqli(
             "127.0.0.1",
             "it490_app",
-            "12345",
+            "2870",
             "login"
         );
 

@@ -68,14 +68,16 @@ class rabbitMQServer
 				$conn->connect();
 				$channel = new AMQPChannel($conn);
 				$exchange = new AMQPExchange($channel);
-				$exchange->setName($this->exchange);
-				$exchange->setType($this->exchange_type);
+				$exchange->setName('');
 
-				$conn_queue = new AMQPQueue($channel);
-				$conn_queue->setName($msg->getReplyTo());
-				$replykey = $this->routing_key.".response";
-				$conn_queue->bind($exchange->getName(),$replykey);
-				$exchange->publish(json_encode($response),$replykey,AMQP_NOPARAM,array('correlation_id'=>$msg->getCorrelationId()));
+				$exchange->publish(
+                                	json_encode($response),
+    					$msg->getReplyTo(),
+    					AMQP_NOPARAM,
+    					['correlation_id' => $msg->getCorrelationId()]
+				);
+
+				$conn->disconnect();
 
 				return;
 			}
@@ -211,9 +213,8 @@ class rabbitMQClient
 			$exchange->setType($this->exchange_type);
 
 			$callback_queue = new AMQPQueue($channel);
-			$callback_queue->setName($this->queue."_response");
-			$callback_queue->declare();
-			$callback_queue->bind($exchange->getName(),$this->routing_key.".response");
+			$callback_queue->setFlags(AMQP_EXCLUSIVE | AMQP_AUTODELETE);
+			$callback_queue->declareQueue();
 
 			$this->conn_queue = new AMQPQueue($channel);
 			$this->conn_queue->setName($this->queue);
@@ -225,6 +226,7 @@ class rabbitMQClient
 
 			$response = $this->response_queue[$uid];
 			unset($this->response_queue[$uid]);
+			$conn->disconnect();
 			return $response;
 		}
 		catch(Exception $e)
@@ -251,6 +253,9 @@ class rabbitMQClient
 			$params['login'] = $this->USER;
 			$params['password'] = $this->PASSWORD;
 			$params['vhost'] = $this->VHOST;
+			$params['connect_timeout'] = 5;
+			$params['read_timeout'] = 30;
+			$params['write_timeout'] = 5;
 			$conn = new AMQPConnection($params);
 			$conn->connect();
 			$channel = new AMQPChannel($conn);
